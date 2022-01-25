@@ -20,7 +20,11 @@ You must have LXD installed on your system before running the setup script.
 ```
 
 This creates a basic LXC image instance `swc` and installs a `usercmd` alias
-for running commands as the `ubuntu` user in a given container.
+for running simple commands as the `ubuntu` user in a given container.
+
+If the `usercmd` alias already exists, the existing definition will be printed
+to the screen before it is clobbered, so you have a chance to save it under a
+different name or restore it after finishing with this code.
 
 ## Additional setup steps before a given workshop
 
@@ -78,11 +82,18 @@ lxc usercmd swc --env SESSION=swc2 --env CMD=demo-terminal.sh
 
 ## Tear down
 
-If you want to remove/replace the container:
+I recommend stopping the container if you don't need it, so it doesn't take up
+system resources:
 
 ```bash
 lxc stop swc
+```
+
+Once it is stopped, you can update your container to the latest code:
+
+```bash
 lxc delete swc
+./make-swc-lxc.sh
 ```
 
 ## Demo terminal options
@@ -104,3 +115,9 @@ The demo terminal can be customised with the following environment variables:
 
 You can pass these to the script using the `--env` option of `lxc exec` as in
 the examples above.
+
+To see what the numeric colours look like on your terminal, run this:
+
+```bash
+for i in {0..255} ; do echo -en "\e[1;38;5;${i}m#\e[0m $i\n" ; done
+```
