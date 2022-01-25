@@ -32,7 +32,7 @@ lxc restore swc clean
 
 Additional setup for individual lessons:
 
-  - Shell lesson
+  - SWC Shell lesson
 
     ```bash
     lxc usercmd swc --env CMD=setup-shell.sh
@@ -40,7 +40,15 @@ Additional setup for individual lessons:
 
     This installs the latest data files under `~/Desktop/shell-lesson-data`.
 
-  - Git lesson (probably not necessary)
+  - LC Shell lesson
+
+    ```bash
+    lxc usercmd swc --env CMD=setup-lcshell.sh
+    ```
+
+    This installs the latest data files under `~/Desktop/shell-lesson`.
+
+  - SWC Git lesson (probably not necessary)
 
     ```bash
     lxc usercmd swc --env CMD=setup-git.sh
@@ -49,6 +57,10 @@ Additional setup for individual lessons:
     This installs a couple of Mars pictures (source: NASA/JPL/Cornell) as
     `~/Pictures/sky/mars.jpg` and `~/Pictures/surface/mars.jpg` in case you
     would rather use these than random binary files.
+
+The technical difficulties associated with accessing Jupyter Lab or RStudio
+inside a Linux Container means this is more trouble than it is worth: run
+these lessons directly on your computer.
 
 ## Using the image for teaching
 
