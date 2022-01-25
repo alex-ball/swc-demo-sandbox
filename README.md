@@ -20,7 +20,8 @@ You must have LXD installed on your system before running the setup script.
 ```
 
 This creates a basic LXC image instance `swc` and installs a `usercmd` alias
-for running simple commands as the `ubuntu` user in a given container.
+for running simple commands as the `ubuntu` user (i.e. not root) in a given
+container.
 
 If the `usercmd` alias already exists, the existing definition will be printed
 to the screen before it is clobbered, so you have a chance to save it under a
@@ -113,7 +114,7 @@ The demo terminal can be customised with the following environment variables:
 
 - `PTCOLOR`: Colour of the prompt (0-255, default: 8).
 
-You can pass these to the script using the `--env` option of `lxc exec` as in
+You can pass these to the script using the `--env` option of `lxc usercmd` as in
 the examples above.
 
 To see what the numeric colours look like on your terminal, run this:
