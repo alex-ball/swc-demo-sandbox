@@ -3,7 +3,7 @@
 if lxd --help > /dev/null
 then
     echo "Creating Linux container for SWC teaching..."
-    lxc launch -p default ubuntu:21.10 swc
+    lxc launch -p default ubuntu:lts swc
     lxc exec swc -- cloud-init status --wait
 else
     echo "Please install LXD first, e.g. `snap install lxd`."
