@@ -1,0 +1,18 @@
+#cloud-config
+timezone: Europe/London
+package_upgrade: true
+packages:
+- git
+- xsel
+- unzip
+write_files:
+- path: /home/ubuntu/.tmux.conf
+- path: /home/ubuntu/.local/bin/demo-terminal.sh
+- path: /home/ubuntu/.local/bin/setup-git.sh
+- path: /home/ubuntu/.local/bin/setup-lcshell.sh
+- path: /home/ubuntu/.local/bin/setup-shell.sh
+runcmd:
+- mkdir /home/ubuntu/{Applications,Desktop,Documents,Downloads,Library,Movies,Music,Pictures,Public}
+- mkdir -p /home/ubuntu/.tmux/plugins/
+- git clone https://github.com/tmux-plugins/tpm /home/ubuntu/.tmux/plugins/tpm
+- tmux new-session -d -s "setup" "tmux source /home/ubuntu/.tmux.conf; /home/ubuntu/.tmux/plugins/tpm/bin/install_plugins"

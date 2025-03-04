@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+from enum import IntEnum, auto
+from pathlib import Path
+import re
+
+
+class State(IntEnum):
+    WATCH = auto()
+    WORK = auto()
+    SLEEP = auto()
+
+
+cwd = Path.cwd()
+output = list()
+
+with open("swc-lxc.yaml") as f:
+    state = State.WATCH
+    text = f.read()
+    for line in text.splitlines():
+        match state:
+            case State.WATCH:
+                output.append(line)
+                if line == "write_files:":
+                    state = State.WORK
+            case State.WORK:
+                output.append(line)
+                if line == "runcmd:":
+                    state = State.SLEEP
+                    continue
+                m = re.match(r"- path: (?P<path>.*)", line)
+                if not m:
+                    continue
+                fp = Path(m.group("path"))
+                fn = fp.name[1:] if fp.name.startswith(".") else fp.name
+                inc = cwd / fn
+                if not inc.is_file():
+                    continue
+                output.append("  content |")
+                with open(inc) as sf:
+                    t = re.sub(r"^", r"    ", sf.read(), flags=re.M)
+                    output.append(t)
+            case State.SLEEP:
+                output.append(line)
+
+print("\n".join(output))
