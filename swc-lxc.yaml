@@ -2,9 +2,13 @@
 timezone: Europe/London
 package_upgrade: true
 packages:
+- entr
 - git
+- man-db
+- nano
 - tmux
 - unzip
+- wget
 - xsel
 write_files:
 - path: /home/ubuntu/.tmux.conf

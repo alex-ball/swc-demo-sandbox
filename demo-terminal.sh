@@ -28,7 +28,7 @@ PTCOLOR="${PTCOLOR:-8}"
 # * name it $SESSION (-s "${SESSION}")
 # * start reading the log
 # * ignore lines starting with '#' since they are the history file's internal timestamps
-tmux new-session -d -s "${SESSION}" "tail -f '${LOG_FILE}' | grep -v '^#'"
+tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -c sh -c \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tail -n ${HISTORY_LINES} | tac\""
 
 # Get the unique (and permanent) ID for the new window
 WINDOW=$(tmux list-windows -F '#{window_id}' -t "${SESSION}")
@@ -98,10 +98,7 @@ sleep 0.1
 # history.
 tmux clear-history -t "${SHELL_PANE}"
 
-# Need add an additional line because Bash writes a trailing newline
-# to the log file after each command, tail reads through that trailing
-# newline and flushes everything it read to its pane.
-LOG_PANE_HEIGHT=$((${HISTORY_LINES} + 1))
+LOG_PANE_HEIGHT=${HISTORY_LINES}
 
 # Resize the log window to show the desired number of lines
 tmux resize-pane -t "${LOG_PANE}" -y "${LOG_PANE_HEIGHT}"
