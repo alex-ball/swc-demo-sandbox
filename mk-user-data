@@ -35,7 +35,7 @@ with open("swc-lxc.yaml") as f:
                 inc = cwd / fn
                 if not inc.is_file():
                     continue
-                output.append("  content |")
+                output.append("  content: |")
                 with open(inc) as sf:
                     t = re.sub(r"^", r"    ", sf.read(), flags=re.M)
                     output.append(t)

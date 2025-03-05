@@ -11,7 +11,8 @@ top, so that the active prompt line is nearer the middle of the window.
 
 [swc-shell-split-window]: https://github.com/rgaiacs/swc-shell-split-window
 
-You must have LXD installed on your system before running the setup script.
+You must have LXD or Incus installed on your system before running the setup
+script.
 
 ## First time setup
 
@@ -34,6 +35,13 @@ To erase any previous changes:
 ```bash
 lxc restore swc clean
 ```
+
+```bash
+incus snapshot restore swc clean
+```
+
+In all the remaining examples below, the `incus` and `lxc` versions of the
+various commands are the same.
 
 Additional setup for individual lessons:
 
@@ -93,7 +101,6 @@ lxc stop swc
 Once it is stopped, you can update your container to the latest code:
 
 ```bash
-lxc delete swc
 ./make-swc-lxc.sh
 ```
 
