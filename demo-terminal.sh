@@ -28,7 +28,7 @@ PTCOLOR="${PTCOLOR:-8}"
 # * name it $SESSION (-s "${SESSION}")
 # * start reading the log
 # * ignore lines starting with '#' since they are the history file's internal timestamps
-tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -c sh -c \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tail -n ${HISTORY_LINES} | tac\""
+tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -pr watch -t -n3600 \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tac\""
 
 # Get the unique (and permanent) ID for the new window
 WINDOW=$(tmux list-windows -F '#{window_id}' -t "${SESSION}")
