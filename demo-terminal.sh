@@ -26,9 +26,17 @@ PTCOLOR="${PTCOLOR:-8}"
 # Create the session to be used
 # * don't attach yet (-d)
 # * name it $SESSION (-s "${SESSION}")
-# * start reading the log
-# * ignore lines starting with '#' since they are the history file's internal timestamps
-tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -pr watch -t -n3600 \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tac\""
+# * use `entr` to watch the log file for changes
+# * each time it does, use `grep` to filter out lines starting with '#'
+#   since they are the history file's internal timestamps
+# * add line numbers with `nl`
+# * reverse the lines with `tac`
+# * print the output full screen with `watch` (set to refresh once an hour)
+tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -pr watch -c -t -n3600 \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tac \""
+
+# adding this would colour the history line numbers as well,
+# but `watch` doesn't seem to pass like colours higher than 15
+# | awk -F' : ' '{print \\\"\033[1;38;5;${PTCOLOR}m\\\"\\\$1\\\" :\033[0m\\\",\\\$2}'
 
 # Get the unique (and permanent) ID for the new window
 WINDOW=$(tmux list-windows -F '#{window_id}' -t "${SESSION}")
@@ -43,8 +51,8 @@ LOG_PID=$(tmux list-panes -F '#{pane_pid}' -t "${WINDOW}")
 # * load history from the empty $LOG_FILE (HISTFILE='${LOG_FILE}')
 # * lines which begin with a space character are not saved in the
 #   history list (HISTCONTROL=ignorespace)
-# * launch Bash since POSIX doesn't specify shell history or HISTFILE
-#   (bash)
+# * launch Bash, since POSIX doesn't specify shell history or HISTFILE,
+#   but don't apply user customizations (bash --norc)
 # * when the Bash process exits, kill the log process
 tmux split-window -v -b -t "${LOG_PANE}" \
 	"HISTFILE='${LOG_FILE}' HISTCONTROL=ignorespace HOME=~ bash --norc; kill '${LOG_PID}'"
@@ -55,23 +63,21 @@ SHELL_PANE=$(tmux list-panes -F '#{pane_id}' -t "${WINDOW}" |
 
 tmux send-keys -t "${SHELL_PANE}" " cd ~" enter
 
-# Unset all aliases to keep your environment from diverging from the
+# Unset all aliases to keep the environment from diverging from the
 # learner's environment.
 tmux send-keys -t "${SHELL_PANE}" " unalias -a" enter
 
-# Append new history to $HISTFILE after each command.
+# Append new history to $HISTFILE when each command is entered.
 # Unlike (PROMPT_COMMAND='history -a'), this method does it before
 # the command is run.
 tmux send-keys -t "${SHELL_PANE}" " trap 'history -a' DEBUG" enter
 
-# Set nice prompt displaying
-# with cyan (1;36m for dark backgrounds, 1;38;5;37m for light backgrounds)
-# the command number and
-# the '$'.
+# Set nice prompt displaying the command number and the '$'
+# in a contrasting colour, namely PTCOLOR.
 tmux send-keys -t "${SHELL_PANE}" " export PS1=\"\n\[\033[1;38;5;${PTCOLOR}m\]\! $\[\033[0m\] \"" enter
 
 #A prompt showing `user@host:~/directory$ ` can be achieved with:
-#tmux send-keys -t "${SHELL_PANE}" " export PS1=\"\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]user@host\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \"" enter
+#tmux send-keys -t "${SHELL_PANE}" " export PS1=\"\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[1;38;5;${PTCOLOR}m\\]user@host\\[\\033[00m\\]:\\[\\033[1;38;5;${PTCOLOR}m\\]\\w\\[\\033[00m\\]\\$ \"" enter
 
 #Set terminal colours
 if [ ! -z "$BGCOLOR" ]; then

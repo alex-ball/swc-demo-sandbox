@@ -5,14 +5,25 @@ Container, so that it is in a more-or-less fresh installation of a recent
 Ubuntu. The primary motivation is to allow an instructor to demonstrate setting
 up Git configuration and SSH keys without clobbering their existing setup.
 
-The terminal uses a fork of Raniere Silva's [swc-shell-split-window] script. One
-major difference is that the history pane is shown at the bottom rather than the
-top, so that the active prompt line is nearer the middle of the window.
+The terminal uses a fork of Raniere Silva's [swc-shell-split-window] script.
+There are two main differences:
 
-[swc-shell-split-window]: https://github.com/rgaiacs/swc-shell-split-window
+- The coding pane is at the top (not the bottom) so that the active prompt line
+  doesn't go much lower than the middle of the window.
+
+- The history pane in the lower half of the screen shows the command history in
+  reverse order. This bit of trickery is achieved with `tac`, the output of which
+  is printed full-screen by `watch`, but with the refresh process delegated to `entr`.
+
+The net effect of this is that the most recent activity is concentrated in the
+middle of the screen, with older activity disappearing off the top and bottom.
+This makes it a less critical issue if the bottom of the window is being
+obscured for some users, and that means the terminal can run full screen.
 
 You must have LXD or Incus installed on your system before running the setup
 script.
+
+[swc-shell-split-window]: https://github.com/rgaiacs/swc-shell-split-window
 
 ## First time setup
 
