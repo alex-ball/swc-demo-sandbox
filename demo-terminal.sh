@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Create terminal for Software Carpentry lesson
+# Create Bash terminal for Software Carpentry lesson
 # with the log of the commands at the bottom.
 
 # Session name. Defaults to 'swc', but you can override from the
@@ -56,9 +56,8 @@ LOG_PID=$(tmux list-panes -F '#{pane_pid}' -t "${WINDOW}")
 # * make the new pane the current pane (no -d)
 # * save history to the empty $LOG_FILE (HISTFILE='${LOG_FILE}')
 # * lines which begin with a space character are not saved in the
-#   history list (HISTCONTROL=ignorespace in Bash, HIST_IGNORE_SPACE/-g in Zsh)
-# * Those settings are Bash specific, so run Bash,
-#   but don't apply user customizations (bash --norc)
+#   history list (HISTCONTROL=ignorespace)
+# * Run Bash, but don't apply user customizations (bash --norc)
 # * when the Bash process exits, kill the log process
 tmux split-window -v -b -t "${LOG_PANE}" \
 	"HISTFILE='${LOG_FILE}' HISTCONTROL=ignorespace HOME=~ bash --norc; kill '${LOG_PID}'"
@@ -94,7 +93,7 @@ fi
 
 tmux send-keys -t "${SHELL_PANE}" " ${SET_PS1}" enter
 
-#Set terminal colours
+# Set terminal colours
 if [ ! -z "$BGCOLOR" ]; then
   tmux select-pane -t "${SHELL_PANE}" -P bg="colour$BGCOLOR"
   tmux select-pane -t "${LOG_PANE}"   -P bg="colour$BGCOLOR"
