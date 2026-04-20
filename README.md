@@ -138,6 +138,14 @@ The demo terminal can be customised with the following environment variables:
 
 - `PTCOLOR`: Colour of the prompt (0-255, default: 8).
 
+- `PROMPT_STYLE`: Style of prompt. Options available:
+
+    - `n`: Number `1 $` (default)
+    - `uhp`: Username, host, path `user@host:path$` resembling default Debian
+      prompt. Note that `user@host` is literally what it says, for educational
+      purposes; it does not use the real values.
+    - `nuhp`: Combination of the above `1. user@host:path$`
+
 You can pass these to the script using the `--env` option of `lxc usercmd` as in
 the examples above.
 

@@ -19,6 +19,9 @@ HISTORY_LINES="${HISTORY_LINES:-0}"
 # override from the calling process.
 PTCOLOR="${PTCOLOR:-8}"
 
+# Style of prompt. Defaults to a simple number.
+PROMPT_STYLE="${PROMPT_STYLE:-'n'}"
+
 # If $LOG_FILE exists, truncate it, otherwise create it.
 # Either way, this leaves us with an empty $LOG_FILE for tailing.
 > "${LOG_FILE}"
@@ -75,12 +78,21 @@ tmux send-keys -t "${SHELL_PANE}" " unalias -a" enter
 # the command is run.
 tmux send-keys -t "${SHELL_PANE}" " trap 'history -a' DEBUG" enter
 
-# Set nice prompt displaying the command number and the '$'
-# in a contrasting colour, namely PTCOLOR.
-tmux send-keys -t "${SHELL_PANE}" " export PS1=\"\n\[\033[1;38;5;${PTCOLOR}m\]\! $\[\033[0m\] \"" enter
+# Set nice prompt using $PTCOLOR as a contrasting colour.
+if [ "$PROMPT_STYLE" == 'uhp' ]; then
+  # `user@host:path/to/cwd$ `
+  SET_PS1="export PS1=\"\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[1;38;5;${PTCOLOR}m\]user@host\[\033[00m\]:\[\033[1;38;5;${PTCOLOR}m\]\w\[\033[00m\]$ \""
+else
+  if [ "$PROMPT_STYLE" == 'nuhp' ]; then
+    # `1. user@host:path/to/cwd$ `
+    SET_PS1="export PS1=\"\n\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[1;38;5;${PTCOLOR}m\]\!\[\033[00m\].\[\033[1;38;5;${PTCOLOR}m\] user@host\[\033[00m\]:\[\033[1;38;5;${PTCOLOR}m\]\w\[\033[00m\]$ \""
+  else
+    # `1 $ `
+    SET_PS1="export PS1=\"\n\[\033[1;38;5;${PTCOLOR}m\]\! $\[\033[0m\] \""
+  fi
+fi
 
-#A prompt showing `user@host:~/directory$ ` can be achieved with:
-#tmux send-keys -t "${SHELL_PANE}" " export PS1=\"\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[1;38;5;${PTCOLOR}m\\]user@host\\[\\033[00m\\]:\\[\\033[1;38;5;${PTCOLOR}m\\]\\w\\[\\033[00m\\]\\$ \"" enter
+tmux send-keys -t "${SHELL_PANE}" " ${SET_PS1}" enter
 
 #Set terminal colours
 if [ ! -z "$BGCOLOR" ]; then
@@ -106,7 +118,6 @@ sleep 0.1
 # Clear tmux's scrollback buffer so it matches Bash's just-cleared
 # history.
 tmux clear-history -t "${SHELL_PANE}"
-
 
 # Resize the log window to show the desired number of lines
 if (( HISTORY_LINES > 0 )); then
