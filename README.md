@@ -5,27 +5,32 @@ Container, so that it is in a more-or-less fresh installation of a recent
 Ubuntu. The primary motivation is to allow an instructor to demonstrate setting
 up Git configuration and SSH keys without clobbering their existing setup.
 
-The terminal uses a fork of Raniere Silva's [swc-shell-split-window] script.
-There are two main differences:
+The terminal uses `demo-terminal.sh`, a fork of Raniere Silva's
+[swc-shell-split-window] script. There are several differences, these being the
+main two:
 
-- The coding pane is at the top (not the bottom) so that the active prompt line
-  doesn't go much lower than the middle of the window.
+- The coding pane is at the top (not the bottom) of the window.
 
 - The history pane in the lower half of the screen shows the command history in
-  reverse order. This bit of trickery is achieved with `tac`, the output of which
-  is printed full-screen by `watch`, but with the refresh process delegated to `entr`.
+  reverse order. This bit of trickery is achieved with `tac` with assistance
+  from `entr` (watching for changes), `awk` (pretty line numbering), and `less`
+  (truncating output).
 
 The net effect of this is that the most recent activity is concentrated in the
 middle of the screen, with older activity disappearing off the top and bottom.
 This makes it a less critical issue if the bottom of the window is being
 obscured for some users, and that means the terminal can run full screen.
 
-You must have LXD or Incus installed on your system before running the setup
-script.
+It is possible to use `demo-terminal.sh` on any platform where `bash`, `grep`,
+and the other four tools mentioned above are available, independently of the
+Linux Container gubbins described below.
 
-[swc-shell-split-window]: https://github.com/rgaiacs/swc-shell-split-window
+[swc-shell-split-window]: https://github.com/UCL-ARC/swc-shell-split-window
 
 ## First time setup
+
+You must have LXC and either LXD or Incus installed on your system before
+running the following setup script.
 
 ```bash
 ./make-swc-lxc.sh
@@ -124,7 +129,8 @@ The demo terminal can be customised with the following environment variables:
 - `LOG_FILE`: The location where the log file will be stored (default:
   `/tmp/$SESSION-split-log-file`).
 
-- `HISTORY_LINES`: How many lines of history to be shown (default: 5).
+- `HISTORY_LINES`: How many lines of history to be shown (any sensible integer,
+  default: Golden Ratio, i.e. approximately 38% of the window height).
 
 - `BGCOLOR`: Background colour of the session panes (0-255, default: transparent).
   Note that the panes do not necessarily reach the edges, so you will get a border

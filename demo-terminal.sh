@@ -13,7 +13,7 @@ LOG_FILE="${LOG_FILE:-/tmp/$SESSION-split-log-file}"
 
 # The number of lines of history to show. Defaults to 5, but you can
 # override from the calling process.
-HISTORY_LINES="${HISTORY_LINES:-5}"
+HISTORY_LINES="${HISTORY_LINES:-0}"
 
 # Colour of the prompt. Defaults to 8 (values 0-255 allowed), but you can
 # override from the calling process.
@@ -27,16 +27,19 @@ PTCOLOR="${PTCOLOR:-8}"
 # * don't attach yet (-d)
 # * name it $SESSION (-s "${SESSION}")
 # * use `entr` to watch the log file for changes
-# * each time it does, use `grep` to filter out lines starting with '#'
-#   since they are the history file's internal timestamps
-# * add line numbers with `nl`
-# * reverse the lines with `tac`
-# * print the output full screen with `watch` (set to refresh once an hour)
-tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -pr watch -c -t -n3600 \"grep -v '^#' '${LOG_FILE}' | nl -w1 -s ' : ' - | tac \""
-
-# adding this would colour the history line numbers as well,
-# but `watch` doesn't seem to pass like colours higher than 15
-# | awk -F' : ' '{print \\\"\033[1;38;5;${PTCOLOR}m\\\"\\\$1\\\" :\033[0m\\\",\\\$2}'
+#   (ls '${LOG_FILE}' | entr)
+# * each time it does, completely clear the pane (-cc), and then
+#   in an unmodified Bash subshell (bash --norc) run a command (-c):
+#   - use `grep` to filter out lines starting with '#' (if present)
+#     since they are the history file's internal timestamps
+#   - use `awk` to add line numbers coloured $PTCOLOR
+#   - reverse the lines with `tac`
+#   - print the first screen of lines with `less` (quitting afterwards)
+tmux new-session -d -s "${SESSION}" "ls '${LOG_FILE}' | entr -cc bash --norc -c \"\
+  grep -v '^#' '${LOG_FILE}' | \
+  awk -v ln=1 '{print \\\"\033[1;38;5;${PTCOLOR}m\\\" ln++ \\\" : \033[0m\\\" \\\$0 }' | \
+  tac | \
+  less -RX~ +1Gq \""
 
 # Get the unique (and permanent) ID for the new window
 WINDOW=$(tmux list-windows -F '#{window_id}' -t "${SESSION}")
@@ -48,10 +51,10 @@ LOG_PID=$(tmux list-panes -F '#{pane_pid}' -t "${WINDOW}")
 # Split the log-pane (-t "${LOG_PANE}") vertically (-v)
 # * put it above the log pane (-b)
 # * make the new pane the current pane (no -d)
-# * load history from the empty $LOG_FILE (HISTFILE='${LOG_FILE}')
+# * save history to the empty $LOG_FILE (HISTFILE='${LOG_FILE}')
 # * lines which begin with a space character are not saved in the
-#   history list (HISTCONTROL=ignorespace)
-# * launch Bash, since POSIX doesn't specify shell history or HISTFILE,
+#   history list (HISTCONTROL=ignorespace in Bash, HIST_IGNORE_SPACE/-g in Zsh)
+# * Those settings are Bash specific, so run Bash,
 #   but don't apply user customizations (bash --norc)
 # * when the Bash process exits, kill the log process
 tmux split-window -v -b -t "${LOG_PANE}" \
@@ -104,10 +107,16 @@ sleep 0.1
 # history.
 tmux clear-history -t "${SHELL_PANE}"
 
-LOG_PANE_HEIGHT=${HISTORY_LINES}
 
 # Resize the log window to show the desired number of lines
-tmux resize-pane -t "${LOG_PANE}" -y "${LOG_PANE_HEIGHT}"
+if (( HISTORY_LINES > 0 )); then
+  # Need account for blank line added to the end
+  LOG_PANE_HEIGHT=$((${HISTORY_LINES} + 1))
+  tmux resize-pane -t "${LOG_PANE}" -y "${LOG_PANE_HEIGHT}"
+else
+  # Use Golden Ratio (approx) instead.
+  tmux resize-pane -t "${LOG_PANE}" -y 38%
+fi
 
 # Turn off tmux's status bar, because learners won't have one in their
 # terminal.
@@ -125,7 +134,7 @@ tmux attach-session -t "${SESSION}"
 # The MIT License (MIT)
 # Copyright (c) 2015 Raniere Silva
 # 
-# Adaptations made 2022 by Alex Ball.
+# Adaptations made 2022 (onwards) by Alex Ball.
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
